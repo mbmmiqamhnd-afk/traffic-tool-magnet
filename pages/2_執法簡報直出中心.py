@@ -74,15 +74,16 @@ class PptxReportBuilder:
     def _set_border(self, cell, color_hex="CBD5E1", width="12700"):
         try:
             tcPr = cell._tc.get_or_add_tcPr()
-            for b in ["lnL", "lnR", "lnT", "lnB"]:
-                existing = tcPr.find(f'{{http://schemas.openxmlformats.org/drawingml/2006/main}}{b}')
+            ns = "http://schemas.openxmlformats.org/drawingml/2006/main"
+            for idx, b in enumerate(["lnL", "lnR", "lnT", "lnB"]):
+                existing = tcPr.find(f'{{{ns}}}{b}')
                 if existing is not None:
                     tcPr.remove(existing)
                 ln = parse_xml(
                     f'<a:{b} xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" w="{width}" cmpd="sng">'
                     f'<a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:{b}>'
                 )
-                tcPr.insert(0, ln)
+                tcPr.insert(idx, ln)
         except Exception:
             pass
 
