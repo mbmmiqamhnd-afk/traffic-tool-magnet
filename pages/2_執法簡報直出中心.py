@@ -75,18 +75,22 @@ class PptxReportBuilder:
         try:
             tcPr = cell._tc.get_or_add_tcPr()
             for b in ["lnL", "lnR", "lnT", "lnB"]:
-                tcPr.append(parse_xml(
-                    f'<a:{b} xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" w="{width}" cmpd="s">'
+                existing = tcPr.find(f'{{http://schemas.openxmlformats.org/drawingml/2006/main}}{b}')
+                if existing is not None:
+                    tcPr.remove(existing)
+                ln = parse_xml(
+                    f'<a:{b} xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" w="{width}" cmpd="sng">'
                     f'<a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:{b}>'
-                ))
+                )
+                tcPr.insert(0, ln)
         except Exception:
             pass
 
     def _set_cell(self, cell, text, font_size=15, bold=False, color=None, bg_color=None):
         cell.text = str(text).strip() if (pd.notna(text) and str(text).strip() != "") else "—"
+        self._set_border(cell)
         cell.fill.solid()
         cell.fill.fore_color.rgb = bg_color if bg_color else self.C_TBL_ROW_BG
-        self._set_border(cell)
         try:
             cell.vertical_anchor = MSO_ANCHOR.MIDDLE
         except Exception:
